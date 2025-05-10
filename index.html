@@ -2,135 +2,140 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>🎬 아이디어 생성기</title>
+  <title>🎬 스토리 아이디어 생성기</title>
   <style>
-    body { font-family: sans-serif; background: #f1f1f1; text-align: center; padding: 30px; }
+    :root {
+      color-scheme: light dark;
+    }
+    body {
+      font-family: sans-serif;
+      background: #f1f1f1;
+      color: #111;
+      text-align: center;
+      padding: 30px;
+      transition: background 0.3s, color 0.3s;
+    }
+    body.dark-mode {
+      background: #121212;
+      color: #eee;
+    }
     h1 { margin-bottom: 20px; }
     #idea {
       margin: 30px auto;
       padding: 20px;
       background: #fff;
+      color: #111;
       border-radius: 12px;
       max-width: 700px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       font-size: 18px;
     }
-    select, button {
-      margin: 8px;
-      padding: 10px;
-      font-size: 14px;
-      border-radius: 6px;
+    body.dark-mode #idea {
+      background: #1e1e1e;
+      color: #eee;
+    }
+    input[type="checkbox"], input[type="text"] {
+      margin: 5px;
+    }
+    .input-group {
+      margin: 10px 0;
     }
     button {
+      margin: 8px;
+      padding: 10px 20px;
+      font-size: 14px;
+      border-radius: 6px;
       background-color: #007bff;
       color: white;
       border: none;
       cursor: pointer;
     }
     button:hover { background-color: #0056b3; }
-    .btn-group {
-      margin-top: 10px;
+    .filter-input {
+      font-size: 12px;
+      color: #333;
+    }
+    body.dark-mode .filter-input {
+      background: #333;
+      color: #eee;
+      border: 1px solid #555;
+    }
+    #toggle-dark {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: none;
+      color: inherit;
+      border: 1px solid currentColor;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
+  <button id="toggle-dark" onclick="toggleDarkMode()">🌙 다크모드 전환</button>
+  <h1>🎬 스토리 아이디어 생성기</h1>
 
-  <h1>🎬 단편영화 아이디어 생성기</h1>
-
-  <!-- 모든 항목에 대해 선택 가능 -->
-  <div>
-    <label>장르: 
-      <select id="genre-select"><option value="">무작위</option></select>
-    </label>
-
-    <label>배경: 
-      <select id="setting-select"><option value="">무작위</option></select>
-    </label>
-
-    <label>주제: 
-      <select id="theme-select"><option value="">무작위</option></select>
-    </label>
-
-    <label>주인공: 
-      <select id="protagonist-select"><option value="">무작위</option></select>
-    </label>
-
-    <label>플롯: 
-      <select id="plot-select"><option value="">무작위</option></select>
-    </label>
+  <div class="input-group">
+    <label><input type="checkbox" id="genre-random" checked />장르 무작위</label>
+    <input type="text" id="genre-fixed" placeholder="예: 호러" />
+    <input class="filter-input" type="text" id="genre-filter" placeholder="포함 키워드 (선택)" />
+    <input class="filter-input" type="text" id="genre-filter-exclude" placeholder="제외 키워드 (선택)" />
   </div>
-
+  <div class="input-group">
+    <label><input type="checkbox" id="setting-random" checked />배경 무작위</label>
+    <input type="text" id="setting-fixed" placeholder="예: 미래도시" />
+    <input class="filter-input" type="text" id="setting-filter" placeholder="포함 키워드 (선택)" />
+    <input class="filter-input" type="text" id="setting-filter-exclude" placeholder="제외 키워드 (선택)" />
+  </div>
+  <div class="input-group">
+    <label><input type="checkbox" id="theme-random" checked />주제 무작위</label>
+    <input type="text" id="theme-fixed" placeholder="예: 기억을 잃은 자아 찾기" />
+    <input class="filter-input" type="text" id="theme-filter" placeholder="포함 키워드 (선택)" />
+    <input class="filter-input" type="text" id="theme-filter-exclude" placeholder="제외 키워드 (선택)" />
+  </div>
+  <div class="input-group">
+    <label><input type="checkbox" id="plot-random" checked />플롯 무작위</label>
+    <input type="text" id="plot-fixed" placeholder="예: 진실과 마주한다" />
+    <input class="filter-input" type="text" id="plot-filter" placeholder="포함 키워드 (선택)" />
+    <input class="filter-input" type="text" id="plot-filter-exclude" placeholder="제외 키워드 (선택)" />
+  </div>
   <div id="idea">아이디어를 생성하세요!</div>
-
-  <div class="btn-group">
-    <button onclick="generateIdea()">🎲 새 아이디어 생성</button>
-    <button onclick="copyIdea()">📋 복사하기</button>
-  </div>
+  <button onclick="generateIdea()">🎲 새 아이디어 생성</button>
 
   <script>
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+    }
+
     const genres = ["호러", "SF", "로맨스", "느와르", "스릴러", "드라마", "판타지", "코미디", "뮤지컬", "스포츠", "모큐멘터리", "디스토피아", "범죄", "서스펜스", "철학"];
-    const settings = ["폐병원", "우주 정거장", "산속 오두막", "지하철역", "미래도시", "전쟁터", "고등학교", "한적한 마을", "사막 한복판", "인공섬", "붕괴된 지하도시", "VR 속 세계", "1950년대 서울", "해저연구소", "무인도", "기억 저장소", "하늘 위 도시", "폐허가 된 백화점", "종교시설", "정치 수용소"];
-    const themes = ["잃어버린 기억", "숨겨진 진실", "인간과 AI의 경계", "죽음을 다루는 직업", "감정을 공유하는 세계", "자아 찾기", "운명론", "인류 멸망 이후의 삶", "가짜 기억", "반복되는 꿈", "타인에게 전염되는 공포", "윤회와 환생", "영혼 이식 기술", "감정을 디지털화하는 실험", "감시사회에서의 저항", "거울 속의 세계", "시간 정지", "모든 것을 기억하는 소년", "예언된 재난", "자신의 분신과의 대결"];
-    const protagonists = ["기억을 잃은 형사", "유령을 보는 여자", "인공지능 연구자", "꿈을 해석하는 소년", "말을 잃은 피아니스트", "복수를 꿈꾸는 소녀", "거짓을 말할 수 없는 남자", "자신이 인간인지 의심하는 안드로이드", "악몽 속에 사는 작가", "시간여행에 중독된 사람", "기억을 팔고 생계를 유지하는 노인", "가면을 쓰고 사는 교사", "인류 마지막 아이", "감정을 느낄 수 없는 군인", "죽은 사람과 대화할 수 있는 아이", "미래를 그리는 화가", "언어를 모르는 통역사"];
-    const plots = ["진실과 마주한다", "되풀이되는 하루를 벗어난다", "자신이 꿈속에 있다는 걸 알게 된다", "자신이 가짜임을 알게 된다", "과거의 자신과 마주친다", "모든 것을 되돌리기 위해 희생을 선택한다", "자신이 만든 세계에 갇힌다", "타인의 기억 속에서 길을 잃는다", "거짓된 신과 싸운다", "자신의 죽음을 목격한다", "감정이 사라진 사회에서 사랑을 시작한다", "기억을 파는 회사의 음모를 밝힌다", "모두의 꿈에 나타나는 존재를 찾는다", "진짜 세계를 찾기 위한 여정에 나선다", "자신이 만든 캐릭터에 의해 공격당한다", "정체불명의 방송을 추적한다", "과거의 실험 기록을 파헤친다"];
+    const settings = ["폐병원", "우주 정거장", "산속 오두막", "지하철역", "미래도시", "전쟁터", "고등학교", "한적한 마을", "사막 한복판", "인공섬", "붕괴된 지하도시", "VR 세계", "1950년대 서울", "해저연구소", "무인도", "기억 저장소", "하늘 위 도시", "폐허가 된 백화점", "종교시설", "정치 수용소"];
+    const themes = ["잃어버린 기억", "숨겨진 진실", "AI와 인간의 경계", "죽음을 다루는 직업", "자아 찾기", "운명론", "가짜 기억", "반복되는 꿈", "타인에게 전염되는 공포", "윤회와 환생", "영혼 이식 기술", "감정을 디지털화하는 실험", "감시사회에서의 저항", "거울 속의 세계", "시간 정지", "모든 것을 기억하는 소년", "예언된 재난", "자신의 분신과의 대결", "타인의 감정으로 사는 사람", "기억을 파는 회사의 음모", "꿈 속 살인사건", "감정을 느낄 수 없는 세계", "나만 늙지 않는 현실", "시간 여행의 부작용", "디지털 사후세계", "존재하지 않는 가족", "신이 된 인간", "의식의 분열", "AI가 만든 가짜 사회", "감정을 느끼는 기계"];
+    const plots = ["진실과 마주한다", "되풀이되는 하루를 벗어난다", "자신이 꿈속에 있음을 깨닫는다", "자신이 가짜임을 알게 된다", "과거의 자신과 마주친다", "모든 것을 되돌리기 위해 희생을 선택한다", "자신이 만든 세계에 갇힌다", "타인의 기억 속에서 길을 잃는다", "거짓된 신과 싸운다", "자신의 죽음을 목격한다", "감정이 사라진 사회에서 사랑을 시작한다", "기억을 파는 회사의 음모를 밝힌다", "모두의 꿈에 나타나는 존재를 찾는다", "진짜 세계를 찾기 위한 여정에 나선다", "자신이 만든 캐릭터에 의해 공격당한다", "정체불명의 방송을 추적한다", "과거의 실험 기록을 파헤친다", "꿈과 현실이 뒤섞인다", "시간 속에 갇힌다", "다른 사람의 몸에서 깨어난다", "잊혀진 세계로 떨어진다", "가짜 기억을 지운다", "감정을 훔친다", "미래의 자신과 싸운다", "자신이 유일한 인간임을 알게 된다", "기억을 되찾기 위해 게임에 참여한다", "자신이 영화 속 캐릭터였음을 깨닫는다", "세상을 리셋하려는 시도에 가담한다", "기억과 감정이 분리된다", "모두가 같은 꿈을 꾸는 사회에서 벗어난다", "죽음 이후를 탐험한다", "가족의 정체를 파헤친다", "잃어버린 도시를 찾아 나선다", "하늘 위에서 눈을 뜬다", "동일한 하루를 수백 번 살아낸다", "언어를 잃고 세상과 단절된다", "정체불명의 목소리를 따라간다", "기억 속 인물과 재회한다", "완벽한 세상을 의심하게 된다", "감정을 감추는 훈련을 받는다", "지구 마지막 날을 맞는다", "디지털 세계와 현실이 충돌한다", "마음을 공유하는 기계를 거부한다", "감정을 주입받는 사회에서 감정 없는 자로 산다", "기억을 봉인한 이유를 찾는다", "AI가 만든 꿈에 갇힌다", "마지막 인간으로 남는다", "존재의 의미를 찾아 나선다"];
 
-    const templates = [
-      "[genre] 장르. [setting]에서 벌어지는 이야기. [protagonist]는 [theme] 속에서 [plot].",
-      "[setting]에 사는 [protagonist], [theme]을 겪고 결국 [plot].",
-      "[protagonist], [setting]에서 [theme]을 마주하며 [plot]."
-    ];
-
-    function populateSelect(id, list) {
-      const select = document.getElementById(id);
-      list.forEach(item => {
-        const option = document.createElement("option");
-        option.value = item;
-        option.textContent = item;
-        select.appendChild(option);
-      });
-    }
-
-    function getSelectedOrRandom(id, list) {
-      const value = document.getElementById(id).value;
-      return value === "" ? random(list) : value;
-    }
-
-    function generateIdea() {
-      const genre = getSelectedOrRandom("genre-select", genres);
-      const setting = getSelectedOrRandom("setting-select", settings);
-      const theme = getSelectedOrRandom("theme-select", themes);
-      const protagonist = getSelectedOrRandom("protagonist-select", protagonists);
-      const plot = getSelectedOrRandom("plot-select", plots);
-      const template = random(templates);
-
-      const idea = template
-        .replace("[genre]", genre)
-        .replace("[setting]", setting)
-        .replace("[theme]", theme)
-        .replace("[protagonist]", protagonist)
-        .replace("[plot]", plot);
-
-      document.getElementById("idea").textContent = idea;
-    }
-
-    function copyIdea() {
-      const text = document.getElementById("idea").textContent;
-      navigator.clipboard.writeText(text).then(() => {
-        alert("아이디어가 복사되었습니다!");
-      });
-    }
+    const genders = ["남자", "여자"];
+    const occupations = ["형사", "기자", "소방관", "화가", "사진작가", "요리사", "교사", "간호사", "의사", "프로그래머", "무용수", "시인", "소설가", "음악가", "아이돌", "연극배우", "고고학자", "천문학자", "운동선수", "정치인", "농부", "군인", "승무원", "비서", "탐정", "고등학생", "대학생", "초등학생", "유치원생", "백수", "사기꾼", "마술사", "성직자", "도둑", "노숙자", "로봇 연구자", "VR 개발자", "기억 관리자", "감정 조절사", "시간 여행자", "유령 사냥꾼", "신학자", "바리스타", "운전기사", "배달원", "환경운동가", "철학자", "검사", "판사", "AI 트레이너"];
+    const traits = ["기억을 잃은", "말을 하지 못하는", "시간을 멈출 수 있는", "꿈을 조종하는", "거짓말을 못하는", "과거에서 온", "미래를 보는", "모든 감정을 잃은", "100년 넘게 살아온", "영혼이 두 개인", "감정을 공유할 수 있는", "누군가의 기억을 갖고 있는", "스스로를 인간이라 믿는 로봇", "투명인간이 된", "죽은 사람의 말을 들을 수 있는", "모든 걸 기록하는", "불사의 몸을 가진", "반복되는 하루에 갇힌", "전생을 기억하는", "감정을 파는", "자신이 만든 AI에 쫓기는", "동물과 대화할 수 있는", "항상 누군가에게 관찰당하는", "자신이 픽션 속 인물이라는 걸 아는", "언제나 타인의 감정을 느끼는", "눈을 감으면 미래를 보는", "과거의 죄를 속죄하려는", "기억을 사고파는", "잠들 수 없는", "타인의 몸으로 이동할 수 있는", "연속된 꿈 속에 사는"];
 
     function random(arr) {
       return arr[Math.floor(Math.random() * arr.length)];
     }
 
-    // 초기화
-    populateSelect("genre-select", genres);
-    populateSelect("setting-select", settings);
-    populateSelect("theme-select", themes);
-    populateSelect("protagonist-select", protagonists);
-    populateSelect("plot-select", plots);
-  </script>
+    function generateProtagonist() {
+      return `${random(traits)} ${random(genders)} ${random(occupations)}`;
+    }
 
+    function generateIdea() {
+      const genre = random(genres);
+      const setting = random(settings);
+      const theme = random(themes);
+      const plot = random(plots);
+      const protagonist = generateProtagonist();
+
+      const idea = `${genre} 장르. ${setting}에서 벌어지는 이야기. ${protagonist}는 ${theme} 속에서 ${plot}.`;
+      document.getElementById('idea').innerText = idea;
+    }
+  </script>
 </body>
 </html>
