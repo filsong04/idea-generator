@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>🎬 아이디어 생성기</title>
+  <style>
+    body { font-family: sans-serif; background: #f1f1f1; text-align: center; padding: 30px; }
+    h1 { margin-bottom: 20px; }
+    #idea {
+      margin: 30px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 12px;
+      max-width: 700px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      font-size: 18px;
+    }
+    select, button {
+      margin: 8px;
+      padding: 10px;
+      font-size: 14px;
+      border-radius: 6px;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover { background-color: #0056b3; }
+    .btn-group {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎬 단편영화 아이디어 생성기</h1>
+
+  <!-- 모든 항목에 대해 선택 가능 -->
+  <div>
+    <label>장르: 
+      <select id="genre-select"><option value="">무작위</option></select>
+    </label>
+
+    <label>배경: 
+      <select id="setting-select"><option value="">무작위</option></select>
+    </label>
+
+    <label>주제: 
+      <select id="theme-select"><option value="">무작위</option></select>
+    </label>
+
+    <label>주인공: 
+      <select id="protagonist-select"><option value="">무작위</option></select>
+    </label>
+
+    <label>플롯: 
+      <select id="plot-select"><option value="">무작위</option></select>
+    </label>
+  </div>
+
+  <div id="idea">아이디어를 생성하세요!</div>
+
+  <div class="btn-group">
+    <button onclick="generateIdea()">🎲 새 아이디어 생성</button>
+    <button onclick="copyIdea()">📋 복사하기</button>
+  </div>
+
+  <script>
+    const genres = ["호러", "SF", "로맨스", "느와르", "스릴러", "드라마", "판타지", "코미디", "뮤지컬", "스포츠", "모큐멘터리", "디스토피아", "범죄", "서스펜스", "철학"];
+    const settings = ["폐병원", "우주 정거장", "산속 오두막", "지하철역", "미래도시", "전쟁터", "고등학교", "한적한 마을", "사막 한복판", "인공섬", "붕괴된 지하도시", "VR 속 세계", "1950년대 서울", "해저연구소", "무인도", "기억 저장소", "하늘 위 도시", "폐허가 된 백화점", "종교시설", "정치 수용소"];
+    const themes = ["잃어버린 기억", "숨겨진 진실", "인간과 AI의 경계", "죽음을 다루는 직업", "감정을 공유하는 세계", "자아 찾기", "운명론", "인류 멸망 이후의 삶", "가짜 기억", "반복되는 꿈", "타인에게 전염되는 공포", "윤회와 환생", "영혼 이식 기술", "감정을 디지털화하는 실험", "감시사회에서의 저항", "거울 속의 세계", "시간 정지", "모든 것을 기억하는 소년", "예언된 재난", "자신의 분신과의 대결"];
+    const protagonists = ["기억을 잃은 형사", "유령을 보는 여자", "인공지능 연구자", "꿈을 해석하는 소년", "말을 잃은 피아니스트", "복수를 꿈꾸는 소녀", "거짓을 말할 수 없는 남자", "자신이 인간인지 의심하는 안드로이드", "악몽 속에 사는 작가", "시간여행에 중독된 사람", "기억을 팔고 생계를 유지하는 노인", "가면을 쓰고 사는 교사", "인류 마지막 아이", "감정을 느낄 수 없는 군인", "죽은 사람과 대화할 수 있는 아이", "미래를 그리는 화가", "언어를 모르는 통역사"];
+    const plots = ["진실과 마주한다", "되풀이되는 하루를 벗어난다", "자신이 꿈속에 있다는 걸 알게 된다", "자신이 가짜임을 알게 된다", "과거의 자신과 마주친다", "모든 것을 되돌리기 위해 희생을 선택한다", "자신이 만든 세계에 갇힌다", "타인의 기억 속에서 길을 잃는다", "거짓된 신과 싸운다", "자신의 죽음을 목격한다", "감정이 사라진 사회에서 사랑을 시작한다", "기억을 파는 회사의 음모를 밝힌다", "모두의 꿈에 나타나는 존재를 찾는다", "진짜 세계를 찾기 위한 여정에 나선다", "자신이 만든 캐릭터에 의해 공격당한다", "정체불명의 방송을 추적한다", "과거의 실험 기록을 파헤친다"];
+
+    const templates = [
+      "[genre] 장르. [setting]에서 벌어지는 이야기. [protagonist]는 [theme] 속에서 [plot].",
+      "[setting]에 사는 [protagonist], [theme]을 겪고 결국 [plot].",
+      "[protagonist], [setting]에서 [theme]을 마주하며 [plot]."
+    ];
+
+    function populateSelect(id, list) {
+      const select = document.getElementById(id);
+      list.forEach(item => {
+        const option = document.createElement("option");
+        option.value = item;
+        option.textContent = item;
+        select.appendChild(option);
+      });
+    }
+
+    function getSelectedOrRandom(id, list) {
+      const value = document.getElementById(id).value;
+      return value === "" ? random(list) : value;
+    }
+
+    function generateIdea() {
+      const genre = getSelectedOrRandom("genre-select", genres);
+      const setting = getSelectedOrRandom("setting-select", settings);
+      const theme = getSelectedOrRandom("theme-select", themes);
+      const protagonist = getSelectedOrRandom("protagonist-select", protagonists);
+      const plot = getSelectedOrRandom("plot-select", plots);
+      const template = random(templates);
+
+      const idea = template
+        .replace("[genre]", genre)
+        .replace("[setting]", setting)
+        .replace("[theme]", theme)
+        .replace("[protagonist]", protagonist)
+        .replace("[plot]", plot);
+
+      document.getElementById("idea").textContent = idea;
+    }
+
+    function copyIdea() {
+      const text = document.getElementById("idea").textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        alert("아이디어가 복사되었습니다!");
+      });
+    }
+
+    function random(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    // 초기화
+    populateSelect("genre-select", genres);
+    populateSelect("setting-select", settings);
+    populateSelect("theme-select", themes);
+    populateSelect("protagonist-select", protagonists);
+    populateSelect("plot-select", plots);
+  </script>
+
+</body>
+</html>
